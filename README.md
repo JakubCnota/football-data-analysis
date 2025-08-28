@@ -1,23 +1,14 @@
-# football-data-analysis
-Projekt prezentuje pełny proces analizy danych piłkarskich z wykorzystaniem narzędzi: **Excel**, **SQL** oraz **Power BI**.  
+**Football Data Analysis Project**
 
-## Opis projektu
-Celem projektu jest pokazanie procesu analizy danych od surowego pliku CSV po interaktywny dashboard w Power BI. Każdy etap został udokumentowany graficznie i opisowo.
+**Project Overview**
+This project demonstrates the complete process of football data analysis, from raw CSV files to interactive dashboards using Excel, SQL Server and Power BI. Each step is documented with clear explanations and visualizations to ensure transparency and reproducibility.
 
-## Importing Multiple CSV Files as Separate Tables in Power Query
+**Data Size and Processing Approach**
+The dataset includes a combination of large files that exceed Excel’s capacity and smaller files that comfortably fit within Excel and Power Query limits.
 
-At the beginning of the project, all key data files were imported into Power Query as separate queries.  
-Each file represents a different aspect of the football dataset and will be cleaned and analyzed individually.
+Large datasets are processed directly in SQL Server to leverage its high performance, scalability, and robust data integrity features. SQL Server handles complex transformations, data validation, and aggregation efficiently, making it ideal for heavy data processing tasks.
 
-**Imported files:**
-- appearances
-- club_games
-- clubs
-- competitions
-- game_events
-- game_lineups
-- games
-- player_valuations
-- players
-- transfers
+Smaller datasets (approximately 1000 records) are processed in Power Query. Power Query offers a flexible, user-friendly environment for data cleaning, filling missing values, renaming columns, and performing lightweight transformations without requiring advanced SQL skills or database access.
+
+This hybrid approach optimizes the workflow by balancing performance and ease of use, ensuring that each data subset is handled in the most appropriate environment.
 
