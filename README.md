@@ -29,7 +29,7 @@ Backup Script (PowerShell)
 The backup was automated using the following PowerShell script:
 
 **PowerShell**
-
+```
 $sourceFolder = "C:\football data analysis\sources"
 $backupFolder = "C:\football data analysis\backup"
 
@@ -47,6 +47,6 @@ Get-ChildItem -Path $sourceFolder -File | ForEach-Object {
 
     Write-Host "Copied: $($_.Name) -> $newName"
 }
-
+```
 This backup step is a critical part of the data preparation workflow and reflects a professional approach to data management.
 
