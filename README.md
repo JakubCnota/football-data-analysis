@@ -12,3 +12,41 @@ Smaller datasets (approximately 1000 records) are processed in Power Query. Powe
 
 This hybrid approach optimizes the workflow by balancing performance and ease of use, ensuring that each data subset is handled in the most appropriate environment.
 
+**Data Backup Procedure**
+
+**Overview**
+
+As a best practice and to ensure data integrity, a full backup of all source data files was performed prior to any data processing or transformation. This step guarantees that the original data remains intact and recoverable in case of any issues during the cleaning or analysis phases.
+
+**Backup Details**
+Source folder: C:\football data analysis\sources
+Backup folder: C:\football data analysis\backup
+Backup method:
+All files from the source folder were copied to the backup folder.
+Each backup file was renamed by appending the suffix _backup before the file extension to clearly distinguish backup copies from original files.
+The backup folder was created if it did not already exist.
+Backup Script (PowerShell)
+The backup was automated using the following PowerShell script:
+
+**PowerShell**
+
+$sourceFolder = "C:\football data analysis\sources"
+$backupFolder = "C:\football data analysis\backup"
+
+if (-not (Test-Path -Path $backupFolder)) {
+    New-Item -ItemType Directory -Path $backupFolder
+}
+
+Get-ChildItem -Path $sourceFolder -File | ForEach-Object {
+    $originalName = $_.BaseName
+    $extension = $_.Extension
+    $newName = "${originalName}_backup${extension}"
+    $destinationPath = Join-Path -Path $backupFolder -ChildPath $newName
+
+    Copy-Item -Path $_.FullName -Destination $destinationPath -Force
+
+    Write-Host "Copied: $($_.Name) -> $newName"
+}
+
+This backup step is a critical part of the data preparation workflow and reflects a professional approach to data management.
+
