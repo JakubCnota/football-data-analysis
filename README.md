@@ -63,3 +63,16 @@ By reviewing this diagram, stakeholders and developers can collaboratively asses
 
 [FootballAnalysisver1.pdf](https://github.com/user-attachments/files/22115818/FootballAnalysisver1.pdf)
 
+**Removal of URL Fields from Source Data**
+**Overview**
+As part of the data preparation and cleaning process, all URL fields present in the source datasets have been removed. This decision was made because URLs are not required for the subsequent stages of data analysis and modeling.
+
+Rationale
+URLs do not contribute to analytical insights such as player performance, match outcomes, or transfer values.
+Removing URLs reduces data volume and complexity, improving processing speed and storage efficiency.
+It helps maintain focus on relevant data attributes, ensuring cleaner and more manageable datasets.
+Eliminates potential privacy or security concerns related to external links.
+Implementation
+During the Power Query cleaning phase, all columns containing URLs (e.g., url, image_url) were identified and removed from the datasets.
+This step was applied consistently across all relevant tables to maintain uniformity.
+
