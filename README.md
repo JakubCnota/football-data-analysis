@@ -50,3 +50,16 @@ Get-ChildItem -Path $sourceFolder -File | ForEach-Object {
 ```
 This backup step is a critical part of the data preparation workflow and reflects a professional approach to data management.
 
+**Preliminary Data Model Diagram**
+
+This document presents the initial version of the data model diagram, which provides a comprehensive overview of how the datasets are interconnected.
+
+This preliminary diagram serves several key purposes:
+
+It allows for a clear understanding of the relationships and dependencies between different data tables.
+It facilitates the identification of potential improvements, such as normalization opportunities, redundant data removal, or necessary schema adjustments.
+It acts as a foundational blueprint to guide further development, refinement, and optimization of the data model.
+By reviewing this diagram, stakeholders and developers can collaboratively assess which elements of the model should be modified, retained, or enhanced to ensure data integrity, performance, and scalability.
+
+[FootballAnalysisver1.pdf](https://github.com/user-attachments/files/22115818/FootballAnalysisver1.pdf)
+
