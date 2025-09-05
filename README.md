@@ -108,6 +108,51 @@ Logical Conversion: The is_major_national_league column, which stored boolean in
 Redundancy Removal: The competition_code column was identified as redundant, as its values were nearly identical to the data in the name column. It was removed to optimize and simplify the data schema.
 Integration with countries Dimension: The original text-based country_name column was replaced with a country_id foreign key. This establishes a formal, integer-based relationship with the newly created countries dimension, ensuring that all geographical information is managed centrally and efficiently.
 As a result of these actions, the competitions table has become a fully normalized and clean dimension, providing a solid foundation for its relationships with fact tables.
+**Data Normalization and Advanced ETL Challenges**
+Overview of Data Normalization Strategy
+A core objective of the data preparation phase was to transform the raw, denormalized dataset into a robust and efficient star schema. This involved creating dedicated dimension tables for key business entities like countries, competitions, and players. This professional approach ensures data integrity, improves query performance, and enhances the overall scalability of the model.
+
+This section details the creation of the geographies dimension and the subsequent refactoring of the competitions table, including the advanced challenges encountered and the solutions implemented.
+
+1. Engineering the geographies Dimension
+Initial Challenge: Handling Countries and International Competitions
+
+The raw data lacked a central dimension for geographical entities. Country names were stored as text fields across players and competitions, while international tournaments were ambiguously marked with null values or a -1 identifier in the country_id column. A simple countries dimension was insufficient, as it would fail to uniquely identify non-domestic competitions like the "UEFA Champions League".
+
+Solution: Creation of a Composite geographies Dimension
+
+A more sophisticated dimension named geographies was engineered to serve as a single source of truth for both countries and unique international competitions.
+
+Implementation Steps:
+
+Data Aggregation: A master list was created by appending distinct country names from the players and competitions tables along with the unique names of international competitions (identified by null country names).
+Standardization: The master list was thoroughly cleaned using Power Query transformations, including trimming whitespace, removing non-printable characters, standardizing case (Proper Case), and replacing delimiters (-, _).
+Indexing: A unique, integer-based primary key (geo_id) was generated to ensure efficient, error-free relationships.
+This process resulted in a robust dimension table capable of uniquely identifying every geographical or competitive entity in the dataset.
+
+2. Refactoring the competitions Table
+Advanced Challenge: Resolving a Cyclic Reference Error
+
+The primary challenge during the transformation of the competitions table was a cyclic reference error. This critical issue arose because:
+
+The geographies query depended on the competitions table to source its list of entities.
+Simultaneously, the competitions query attempted to merge with the geographies table to retrieve the geo_id.
+This created an unbreakable dependency loop (geographies -> competitions -> geographies), causing Power Query's evaluation engine to fail. This error manifested as unresponsive previews, failed merges, and misleading error messages until the root cause was identified.
+
+Solution: Decoupling Dependencies with Referenced Queries
+
+The cyclic dependency was resolved using a standard data warehousing best practice: decoupling queries via references.
+
+Implementation Steps:
+
+Buffered References: "Snapshot" references of the source queries (competitions and players) were created, named ref_competitions and ref_players. These references act as stable, intermediate buffers that do not change when the original queries are modified.
+Redirecting Dependencies: The geographies query was modified to source its data exclusively from these non-dependent references (ref_competitions, ref_players), thus breaking the cycle.
+Successful Merge: With the dependency loop eliminated, the competitions table could be safely merged with the now-independent geographies dimension.
+Final Refactoring of competitions:
+
+A conditional lookup_key column was engineered to handle both country names and international competition names, ensuring a 100% match rate against the geographies dimension.
+The merge operation was used to join competitions with geographies on this key, successfully adding the geography_id foreign key.
+All redundant and intermediate columns (country_name, old country_id, lookup_key) were removed, and the remaining columns were cleaned and standardized.
 
 
 
