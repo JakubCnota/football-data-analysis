@@ -79,25 +79,16 @@ This step was applied consistently across all relevant tables to maintain unifor
 
 **Creation of the managers Dimension Table**
 Overview
+The managers dimension table was created by extracting a unique list of manager names from the games and club_games fact tables. To transform this simple lookup list into a robust and analytically flexible dimension, the name attribute was further processed.
 
-In the raw dataset, manager information (full names) was stored as text fields directly within fact tables such as games and club_games. This structure led to massive data redundancy, increased the risk of inconsistencies (e.g., due to typos), and negatively impacted the model's performance.
+Advanced Name Parsing for Enhanced Analytics
+A single FullName column limits analytical capabilities such as sorting by surname. To overcome this, the FullName field was deconstructed into atomic components, adhering to best data modeling practices.
 
-To normalize the data model and ensure data integrity and efficiency, a decision was made to create a dedicated managers dimension table.
+The following columns now constitute the managers dimension:
 
-Implementation Process
-
-The process of creating the managers table and refactoring the model was carried out in the following steps:
-
-Data Aggregation: Data from the games and club_games tables were combined to gather all occurrences of manager names that appeared in the dataset.
-Extraction of Unique Values: A unique list of managers was extracted from the aggregated set, eliminating all duplicates.
-Creation of a Primary Key (Index): An index column (manager_id) was added to the unique list, assigning a unique numeric identifier to each manager. This identifier became the primary key of the new table.
-Creation of the Dimension Table: Based on this list, a new, clean dimension table – managers – was created, containing the manager_id and full_name.
-Updating Fact Tables: The manager names in the original tables (club_games and games) were replaced with their corresponding manager_id values. These columns became foreign keys, establishing a formal relationship with the new managers table.
-Rationale and Benefits
-
-This process yielded four key benefits:
-
-Data Integrity: A manager's name is now stored in a single place. Any corrections or updates only need to be made once in the managers table, and the changes will be automatically reflected throughout the entire report.
-Improved Performance: Filtering and aggregating data using numeric (integer) keys is significantly faster than performing operations on text fields.
-Reduced Model Size: Storing integers instead of repetitive, long text strings reduces memory consumption.
-Model Clarity: An explicit and logical one-to-many relationship was established between the dimension (managers) and the facts (club_games), adhering to the best practices of star schema modeling.
+**Manager_ID:** A unique, integer-based primary key generated to ensure efficient relationships.
+**FirstName:** Contains the manager's first name.
+**LastName:** Contains only the final part of the manager's name.
+Logic: To create a consistent sorting key, only the text after the last space was extracted. This effectively handles multi-part surnames (e.g., for "Erik ten Hag", the LastName is "Hag"), providing a clean and reliable field for alphabetical sorting.
+**FullName:** The original, cleaned full name was retained for straightforward display purposes in reports and visuals.
+This structured approach elevates the managers table from a simple lookup list to a professional dimension, enabling more sophisticated sorting, filtering, and analysis while maintaining a user-friendly display name.
