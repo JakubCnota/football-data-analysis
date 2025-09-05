@@ -92,3 +92,23 @@ The following columns now constitute the managers dimension:
 Logic: To create a consistent sorting key, only the text after the last space was extracted. This effectively handles multi-part surnames (e.g., for "Erik ten Hag", the LastName is "Hag"), providing a clean and reliable field for alphabetical sorting.
 **FullName:** The original, cleaned full name was retained for straightforward display purposes in reports and visuals.
 This structured approach elevates the managers table from a simple lookup list to a professional dimension, enabling more sophisticated sorting, filtering, and analysis while maintaining a user-friendly display name.
+
+**competitions Table** - Standardization and Refactoring
+
+The competitions dimension plays a fundamental role in data segmentation. The transformation process focused on converting raw, technical data into clean and consistent categorical attributes, ready for use in the presentation layer.
+
+1. Text Cleaning and Standardization
+
+Categorical Attributes (name, sub_type, type, confederation): All text-based attributes were standardized. Operations included removing special characters (hyphens, underscores) and applying Proper Case formatting. This ensures a consistent and professional appearance for labels in filters and charts.
+2. Data Type Correction
+
+Logical Conversion: The is_major_national_league column, which stored boolean information as text, was converted to a native True/False data type. This transformation is key to ensuring data integrity and enabling efficient logical operations in future analyses.
+3. Normalization and Integration
+
+Redundancy Removal: The competition_code column was identified as redundant, as its values were nearly identical to the data in the name column. It was removed to optimize and simplify the data schema.
+Integration with countries Dimension: The original text-based country_name column was replaced with a country_id foreign key. This establishes a formal, integer-based relationship with the newly created countries dimension, ensuring that all geographical information is managed centrally and efficiently.
+As a result of these actions, the competitions table has become a fully normalized and clean dimension, providing a solid foundation for its relationships with fact tables.
+
+
+
+
