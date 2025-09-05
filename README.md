@@ -76,3 +76,28 @@ Implementation
 During the Power Query cleaning phase, all columns containing URLs (e.g., url, image_url) were identified and removed from the datasets.
 This step was applied consistently across all relevant tables to maintain uniformity.
 
+
+**Creation of the managers Dimension Table**
+Overview
+
+In the raw dataset, manager information (full names) was stored as text fields directly within fact tables such as games and club_games. This structure led to massive data redundancy, increased the risk of inconsistencies (e.g., due to typos), and negatively impacted the model's performance.
+
+To normalize the data model and ensure data integrity and efficiency, a decision was made to create a dedicated managers dimension table.
+
+Implementation Process
+
+The process of creating the managers table and refactoring the model was carried out in the following steps:
+
+Data Aggregation: Data from the games and club_games tables were combined to gather all occurrences of manager names that appeared in the dataset.
+Extraction of Unique Values: A unique list of managers was extracted from the aggregated set, eliminating all duplicates.
+Creation of a Primary Key (Index): An index column (manager_id) was added to the unique list, assigning a unique numeric identifier to each manager. This identifier became the primary key of the new table.
+Creation of the Dimension Table: Based on this list, a new, clean dimension table – managers – was created, containing the manager_id and full_name.
+Updating Fact Tables: The manager names in the original tables (club_games and games) were replaced with their corresponding manager_id values. These columns became foreign keys, establishing a formal relationship with the new managers table.
+Rationale and Benefits
+
+This process yielded four key benefits:
+
+Data Integrity: A manager's name is now stored in a single place. Any corrections or updates only need to be made once in the managers table, and the changes will be automatically reflected throughout the entire report.
+Improved Performance: Filtering and aggregating data using numeric (integer) keys is significantly faster than performing operations on text fields.
+Reduced Model Size: Storing integers instead of repetitive, long text strings reduces memory consumption.
+Model Clarity: An explicit and logical one-to-many relationship was established between the dimension (managers) and the facts (club_games), adhering to the best practices of star schema modeling.
