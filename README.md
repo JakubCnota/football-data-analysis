@@ -186,6 +186,35 @@ Key Renaming Convention: To ensure model-wide consistency, primary and foreign k
 Final Review: All column names were standardized to a clear, English-based convention, and their final order was arranged logically for improved readability.
 These comprehensive refinements have transformed the clubs table into a robust, clean, and analytically enriched dimension, fully prepared to support complex queries and deliver reliable insights within the data model.
 
+**Normalization, Cleansing, and Enrichment of the Core players Dimension**
+The players table is the most critical and attribute-rich dimension in the data model, serving as the foundation for all player-centric analysis. It underwent an extensive transformation process focused on aggressive normalization, data cleansing, and sophisticated feature engineering to convert it into a lean, robust, and analytically powerful asset.
+
+1. Aggressive Normalization
+To adhere to the principles of a star schema and ensure a single source of truth, all attributes describing a player's current club were removed.
+
+Removed Columns: current_club_name, current_club_domestic_competition_id.
+Rationale: This information is now accessed exclusively through a relationship between players[ClubKey] and clubs[ClubKey]. This critical step prevents data redundancy, eliminates the risk of inconsistencies, and significantly optimizes the data model.
+2. Data Pruning and Optimization
+
+Unnecessary Columns: The agent_name and contract_expiration_date columns were removed as they were identified as not required for the analytical objectives of this project.
+Technical Identifiers: The player_code column, a non-analytical identifier, was also removed.
+Rationale: This pruning process simplifies the model, reduces its memory footprint, and focuses the dimension on the most relevant attributes for analysis.
+3. Advanced Feature Engineering for Deeper Insights
+Several new, high-value attributes were engineered to enrich the dimension:
+
+Atomic Name Columns (FirstName, LastName): The composite FullName attribute was deconstructed into separate FirstName and LastName columns. The LastName was defined as the text after the last space to ensure consistent sorting for multi-part names.
+Standardized Season Format (last_season): The numeric year (e.g., 2023) was transformed into a clear, standardized text format (2022/2023) for improved readability and unambiguous interpretation in reports.
+Calculated Age: A player's current age was calculated based on their date_of_birth. A robust, error-proof M formula (try...otherwise) using the stable DateTime.FixedLocalNow() function was implemented to handle potential data quality issues in the source column.
+Career Stage Category: A conditional column was created to segment players into analytical cohorts ("Young Talent", "Peak Career", "Veteran") based on their calculated age.
+4. Data Type Correction and Cleansing
+
+Date Conversion: The date_of_birth column was converted from a DateTime type (containing a redundant 00:00:00 time component) to a clean Date type. A locale-aware transformation was used to correctly parse the DD.MM.RRRR source format.
+Handling of Missing Categorical Data (foot): Null values in the foot column were replaced with the descriptive text "Unknown" to create an explicit, filterable category for end-users.
+5. Strategic Denormalization for Performance
+
+After careful consideration, the market_value_in_eur and highest_market_value_in_eur columns were intentionally retained in the dimension table.
+Rationale: While this information also exists transactionally in player_valuations, keeping these key performance indicators directly in the players dimension is a deliberate denormalization strategy. It significantly boosts report performance for common operations like sorting and filtering by player value, and simplifies the user experience by providing ready-to-use measures.
+
 
 
 
