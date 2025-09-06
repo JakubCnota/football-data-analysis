@@ -154,6 +154,38 @@ A conditional lookup_key column was engineered to handle both country names and 
 The merge operation was used to join competitions with geographies on this key, successfully adding the geography_id foreign key.
 All redundant and intermediate columns (country_name, old country_id, lookup_key) were removed, and the remaining columns were cleaned and standardized.
 
+**Data Quality, Standardization, and Enrichment for the clubs Dimension**
+The clubs dimension serves as a central reference for all club-related attributes. To elevate it to a professional standard, the table underwent a comprehensive transformation process focusing on data cleansing, normalization, handling of inconsistent data, and feature engineering for enhanced analytical value.
+
+1. Removal of Incomplete and Redundant Columns
+
+100% Empty Columns: The total_market_value and coach_name columns were removed from the table as they were found to contain no data (100% null values). This step simplifies the model and eliminates informational "noise".
+Rationale: Retaining entirely empty columns provides no analytical value and is contrary to clean data modeling principles. The correct historical relationship between clubs and coaches is managed in the club_games fact table.
+2. Data Cleaning and Type Correction
+
+Textual Attributes: All descriptive text fields, such as name and stadium_name, were standardized using a consistent cleaning process (Trim, Clean, Proper Case).
+Numerical Attributes:
+The average_age column, originally stored as text with dots as decimal separators, was correctly converted to the Decimal Number data type using locale-aware transformations.
+Other numeric columns (squad_size, stadium_seats, etc.) were set to the Whole Number type.
+3. Advanced Handling of Financial and Statistical Data
+
+Parsing Financial Text: The net_transfer_record column, stored in a complex text format (e.g., +€778m, +-0), was systematically parsed into a clean Decimal Number. This involved:
+Handling special cases like +-0.
+Creating a conditional Multiplier column to handle suffixes ('m' for millions, 'k' for thousands).
+Removing non-numeric characters (€, letters).
+Calculating the final numeric value.
+Contextual Handling of Zeros and Nulls: A deliberate, context-aware strategy was applied to zero values to ensure analytical integrity:
+In squad_size and foreigners_number, a value of 0 was treated as valid data (e.g., "zero players") and was preserved.
+In average_age and foreigners_percentage, a value of 0 was identified as logically impossible or misleading. These zeros were replaced with null to prevent them from skewing aggregate calculations like averages.
+4. Feature Engineering for Deeper Insights
+
+Stadium Size Category: To facilitate cohort analysis, a new categorical column was engineered based on the stadium_seats attribute. Clubs were grouped into "Small" (< 15k seats), "Medium" (15k-40k), and "Large" (> 40k) categories. This enables powerful comparisons of club performance based on stadium size.
+5. Schema Standardization and Finalization
+
+Key Renaming Convention: To ensure model-wide consistency, primary and foreign keys were renamed using a "Key" suffix. club_id was renamed to ClubKey, and domestic_competition_id was renamed to CompetitionKey.
+Final Review: All column names were standardized to a clear, English-based convention, and their final order was arranged logically for improved readability.
+These comprehensive refinements have transformed the clubs table into a robust, clean, and analytically enriched dimension, fully prepared to support complex queries and deliver reliable insights within the data model.
+
 
 
 
