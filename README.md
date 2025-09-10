@@ -255,6 +255,59 @@ The data model now contains a single, authoritative Calendar dimension.
 All fact tables have been successfully refactored to include a DateKey foreign key, replacing their disparate date columns.
 This clean, star-schema structure, with a dedicated Calendar dimension, fully enables advanced time intelligence calculations and provides a consistent, user-friendly experience for filtering and analyzing data over time. The final relationships between the Calendar and the fact tables are established in the Power Pivot data model.
 
+```sql    
+WITH 
+Dates_Games AS (
+    SELECT DISTINCT CAST(date AS DATE) AS ValidDate 
+    FROM staging.games 
+    WHERE ISDATE(date) = 1
+),
+Dates_Transfers AS (
+    SELECT DISTINCT CAST(transfer_date AS DATE) AS ValidDate 
+    FROM staging.transfers 
+    WHERE ISDATE(transfer_date) = 1
+),
+Dates_Valuations AS (
+    SELECT DISTINCT CAST(date AS DATE) AS ValidDate 
+    FROM staging.player_valuations 
+    WHERE ISDATE(date) = 1
+),
+Dates_Appearances AS (
+    SELECT DISTINCT CAST(date AS DATE) AS ValidDate 
+    FROM staging.appearances 
+    WHERE ISDATE(date) = 1
+),
+Dates_Events AS (
+    SELECT DISTINCT CAST(date AS DATE) AS ValidDate 
+    FROM staging.game_events 
+    WHERE ISDATE(date) = 1
+),
+
+
+All_Unique_Dates AS (
+    SELECT ValidDate FROM Dates_Games
+    UNION
+    SELECT ValidDate FROM Dates_Transfers
+    UNION
+    SELECT ValidDate FROM Dates_Valuations
+    UNION
+    SELECT ValidDate FROM Dates_Appearances
+    UNION
+    SELECT ValidDate FROM Dates_Events
+)
+
+
+SELECT 
+    MIN(ValidDate) AS MinDate, 
+    MAX(ValidDate) AS MaxDate  
+FROM 
+    All_Unique_Dates
+WHERE 
+    ValidDate IS NOT NULL;
+```
+
+
+
 
 
 
