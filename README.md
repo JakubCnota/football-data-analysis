@@ -255,6 +255,9 @@ The data model now contains a single, authoritative Calendar dimension.
 All fact tables have been successfully refactored to include a DateKey foreign key, replacing their disparate date columns.
 This clean, star-schema structure, with a dedicated Calendar dimension, fully enables advanced time intelligence calculations and provides a consistent, user-friendly experience for filtering and analyzing data over time. The final relationships between the Calendar and the fact tables are established in the Power Pivot data model.
 
+Script 1: Discovery Query for Date Range
+
+
 ```sql    
 WITH 
 Dates_Games AS (
@@ -304,6 +307,73 @@ FROM
     All_Unique_Dates
 WHERE 
     ValidDate IS NOT NULL;
+```
+
+```sql
+
+Script 2: Generation of the dim_Calendar Table
+
+USE FootballAnalysis;
+GO
+
+
+IF OBJECT_ID('dbo.dim_Calendar', 'U') IS NOT NULL
+    DROP TABLE dbo.dim_Calendar;
+GO
+
+CREATE TABLE dbo.dim_Calendar (
+    DateKey INT PRIMARY KEY,
+    FullDate DATE NOT NULL,
+    DayOfMonth INT,
+    DayName NVARCHAR(20),
+    DayOfWeek INT, 
+    DayOfYear INT,
+    WeekOfYear INT,
+    MonthNum INT,
+    MonthName NVARCHAR(20),
+    QuarterNum INT,
+    QuarterName CHAR(2),
+    YearNum INT
+);
+GO
+
+
+BEGIN
+    
+    DECLARE @StartDate DATE = '1993-07-01';
+    DECLARE @EndDate DATE = '2026-07-01';
+
+   
+    WHILE @StartDate <= @EndDate
+    BEGIN
+       
+        INSERT INTO dbo.dim_Calendar (DateKey, FullDate) 
+        VALUES (
+            (YEAR(@StartDate) * 10000) + (MONTH(@StartDate) * 100) + DAY(@StartDate),
+            @StartDate
+        );
+        SET @StartDate = DATEADD(day, 1, @StartDate);
+    END;
+
+
+    UPDATE dbo.dim_Calendar
+    SET
+        DayOfMonth = DAY(FullDate),
+        DayName = FORMAT(FullDate, 'dddd', 'en-US'),
+        DayOfWeek = DATEPART(iso_week, FullDate), -
+        DayOfYear = DATEPART(dayofyear, FullDate),
+        WeekOfYear = DATEPART(iso_week, FullDate),
+        MonthNum = MONTH(FullDate),
+        MonthName = FORMAT(FullDate, 'MMMM', 'en-US'),
+        QuarterNum = DATEPART(quarter, FullDate),
+        QuarterName = 'Q' + CAST(DATEPART(quarter, FullDate) AS CHAR(1)),
+        YearNum = YEAR(FullDate);
+END
+GO
+
+SELECT TOP 100 * FROM dbo.dim_Calendar ORDER BY FullDate ASC;
+GO
+
 ```
 
 
