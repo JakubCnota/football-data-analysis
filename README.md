@@ -215,8 +215,8 @@ Handling of Missing Categorical Data (foot): Null values in the foot column were
 After careful consideration, the market_value_in_eur and highest_market_value_in_eur columns were intentionally retained in the dimension table.
 Rationale: While this information also exists transactionally in player_valuations, keeping these key performance indicators directly in the players dimension is a deliberate denormalization strategy. It significantly boosts report performance for common operations like sorting and filtering by player value, and simplifies the user experience by providing ready-to-use measures.
 
-README Entry: Engineering a Dynamic Calendar Dimension
-Overview: A Hybrid Approach to Time Intelligence
+
+**Overview: A Hybrid Approach to Time Intelligence**
 To enable sophisticated time-based analysis, a dedicated Calendar Dimension (dim_Calendar) was created. This is a fundamental best practice in business intelligence, as it provides a stable and attribute-rich foundation for all time intelligence functions.
 
 A hybrid approach was adopted to construct this dimension, leveraging the strengths of both SQL Server and Power Query:
