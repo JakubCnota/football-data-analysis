@@ -215,6 +215,46 @@ Handling of Missing Categorical Data (foot): Null values in the foot column were
 After careful consideration, the market_value_in_eur and highest_market_value_in_eur columns were intentionally retained in the dimension table.
 Rationale: While this information also exists transactionally in player_valuations, keeping these key performance indicators directly in the players dimension is a deliberate denormalization strategy. It significantly boosts report performance for common operations like sorting and filtering by player value, and simplifies the user experience by providing ready-to-use measures.
 
+README Entry: Engineering a Dynamic Calendar Dimension
+Overview: A Hybrid Approach to Time Intelligence
+To enable sophisticated time-based analysis, a dedicated Calendar Dimension (dim_Calendar) was created. This is a fundamental best practice in business intelligence, as it provides a stable and attribute-rich foundation for all time intelligence functions.
+
+A hybrid approach was adopted to construct this dimension, leveraging the strengths of both SQL Server and Power Query:
+
+SQL Server was used for its high-performance, set-based processing capabilities to generate the raw, continuous sequence of dates.
+Power Query was then used to integrate this calendar into the existing data model and prepare the fact tables for their relationship with this new dimension.
+Part 1: High-Performance Date Generation in SQL Server
+The core of the calendar table—a continuous sequence of dates spanning the entire scope of the project's data—was generated using a T-SQL script in SQL Server.
+
+Implementation Steps in SQL:
+
+Static Date Range Definition: To ensure stability and accommodate future data, a fixed date range was defined (e.g., from 1993-07-01 to 2026-07-01). This approach was chosen over dynamic range finding to create a robust and predictable time axis.
+Table Structure Creation: A new table, dbo.dim_Calendar, was created with a predefined schema. This included a primary key (DateKey in YYYYMMDD integer format), a FullDate column, and numerous attribute columns (e.g., YearNum, MonthName, DayOfWeek, QuarterName).
+Iterative Row Generation: A WHILE loop was used to iterate from the defined start date to the end date, inserting one row for each day into the dim_Calendar table. During the INSERT operation, both the FullDate and the DateKey primary key were populated simultaneously to ensure data integrity.
+Attribute Calculation: After the primary data generation, a single, efficient UPDATE statement was executed to calculate and populate all descriptive attributes for every date in the table (e.g., deriving MonthName from FullDate).
+Rationale for Using SQL Server:
+
+Performance: T-SQL is exceptionally efficient at generating large, set-based data like a multi-decade calendar.
+Scalability: The resulting table is a persistent, reusable asset in the database, available to any other analytical tool.
+Robustness: The scripted approach is fully documented, repeatable, and independent of the primary data transformation workflow in Power Query.
+Part 2: Integration and Model Refactoring in Power Query
+Once the dim_Calendar table was created in SQL Server, it was integrated into the Excel data model via Power Query. The primary task was to refactor the fact tables to use the new calendar dimension.
+
+Implementation Steps in Power Query:
+
+Import Calendar Dimension: A new query was created to connect to the SQL Server database and import the dbo.dim_Calendar table into the Power Query Editor. It was renamed to Calendar.
+
+Refactoring Fact Tables: Each fact table containing a date column (e.g., games, transfers, player_valuations) underwent a transformation to replace its native date column with the corresponding DateKey from the Calendar dimension. This was achieved through the following sub-process for each fact table:
+
+Merge Operation: The fact table was merged (Left Outer Join) with the Calendar query, using the native date column (e.g., games[date]) and Calendar[FullDate] as the join keys.
+Key Expansion: The resulting nested table column was expanded to bring only the DateKey into the fact table.
+Schema Cleansing: The original, now-redundant native date column was removed. The new DateKey column was positioned with other keys.
+Final Outcome:
+
+The data model now contains a single, authoritative Calendar dimension.
+All fact tables have been successfully refactored to include a DateKey foreign key, replacing their disparate date columns.
+This clean, star-schema structure, with a dedicated Calendar dimension, fully enables advanced time intelligence calculations and provides a consistent, user-friendly experience for filtering and analyzing data over time. The final relationships between the Calendar and the fact tables are established in the Power Pivot data model.
+
 
 
 
