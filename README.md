@@ -409,6 +409,40 @@ Solution: The issue was resolved within Power Query before the export. By using 
 Final Architecture
 This process results in a clean, well-structured, and performance-optimized star schema within the dbo schema of the FootballAnalysis database. All analytical tables are ready to be consumed by Power BI for visualization and analysis. While the loading process was manual, the resulting data model is robust and adheres to sound data modeling principles.
 
+**Hybrid ETL Strategy: Power Query + SQL Server**
+The core of the data preparation was performed in Power Query, which served as the primary ETL (Extract, Transform, Load) engine. This approach was chosen for its flexibility and interactive interface. For the games table, this specifically included:
+
+Feature Engineering: Creating new, valuable columns like SeasonFormat ("2013/2014") and final_score ("3 - 1").
+Data Normalization: Removing redundant informational columns like home_club_name, away_club_name, and stadium to adhere to star schema principles, relying instead on relationships to dimension tables.
+Data Cleansing: Handling inconsistencies, such as resolving hyphens in score columns before converting them to their proper numeric types.
+Once the games table was fully prepared in Power Query, the result was exported as a clean CSV file. This "snapshot" was then loaded into a predefined dbo.games table in SQL Server using the Import Flat File Wizard in SSMS.
+
+Data Cleansing Example: Removing Incomplete Matches from the games Table
+A final data quality step was the removal of incomplete records from the loaded dbo.games table. This concerned matches where a final score was not recorded. Such records provide no analytical value and could skew aggregate calculations. This example demonstrates a post-load verification and cleansing step performed directly in SQL for maximum control.
+
+
+SQL
+
+
+WITH RowsToDelete AS (
+    SELECT game_id
+    FROM dbo.games
+    WHERE home_club_goals IS NULL OR away_club_goals IS NULL -- Business logic: no result recorded.
+)
+SELECT * FROM RowsToDelete;
+
+After confirming the correct rows were identified, the SELECT was replaced with a DELETE statement. The CTE logic remained identical, guaranteeing that only the previously verified records were removed from the dbo.games table.
+
+SQL
+
+WITH RowsToDelete AS (
+    SELECT game_id
+    FROM dbo.games
+    WHERE home_club_goals IS NULL OR away_club_goals IS NULL
+)
+DELETE FROM dbo.games
+WHERE game_id IN (SELECT game_id FROM RowsToDelete);
+
 
 
 
