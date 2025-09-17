@@ -443,6 +443,50 @@ WITH RowsToDelete AS (
 DELETE FROM dbo.games
 WHERE game_id IN (SELECT game_id FROM RowsToDelete);
 
+**The fct_Club_Games table serves a critical role in the data model as a factless fact table. Its primary purpose is not to store quantitative measures, but to capture the relationship between a club, a manager, and a specific game. This enables powerful analyses related to managerial performance and tactics.**
+
+Transformation Process (SQL)
+The raw data from staging.club_games was heavily denormalized, containing redundant information about opponents and metrics already present in other tables. The transformation process, executed via a T-SQL script, focused on normalization and enrichment.
+
+Key Transformation Steps:
+
+Column Selection & Normalization:
+
+Only essential columns (game_id, club_id, own_manager_name, hosting, is_win) were selected.
+All redundant columns containing opponent data (opponent_*), goal counts (*_goals), and league positions (*_position) were deliberately removed. This eliminates data duplication and ensures that fct_Games remains the single source of truth for match results.
+Manager Key Enrichment:
+
+The core step was to replace the textual own_manager_name with a robust, numeric ManagerKey.
+This was achieved by performing a LEFT JOIN to the dbo.dim_managers dimension table on the ManagerName field.
+A COALESCE function was used to assign a default key of -1 (representing "Unknown") for any matches where a manager could not be found in the dimension, ensuring referential integrity.
+Surrogate Key Generation:
+
+A unique primary key, ClubGameKey, was synthetically generated for the new table by concatenating the GameKey and ClubKey. This creates a stable and unique identifier for each record.
+
+**The fct_Transfers table is a classic transactional fact table that captures player movements between clubs. The transformation process focused on converting the denormalized source data into a lean, efficient table and handling complex data integrity challenges related to non-standard entities.**
+
+Transformation Process (SQL)
+The source data in staging.transfers contained non-standard club names such as "Without Club" and "Retired", which do not exist in the dbo.dim_Clubs dimension. A robust data warehousing pattern was implemented to handle these cases gracefully.
+
+Key Transformation Steps:
+
+Dimension Enrichment with "Dummy Members":
+
+To ensure referential integrity, the dbo.dim_Clubs dimension table was first enriched with special, "dummy" records.
+Using a MERGE statement, rows for "Unknown" (-1), "Without Club" (-2), and "Retired" (-3) were added. This allows every record in the fact table to have a valid corresponding entry in the dimension table.
+Normalization and Column Selection:
+
+Redundant textual columns (player_name, from_club_name, to_club_name) were removed from the selection. The model relies on relationships to the dim_Players and dim_Clubs dimensions to retrieve this information.
+Conditional Key Assignment:
+
+A CASE statement was implemented to intelligently assign the ClubFromKey and ClubToKey.
+The logic checks the club name first: if it matches "Without Club" or "Retired", it assigns the corresponding special ID (-2 or -3).
+Otherwise, it casts the standard club_id to an integer. A COALESCE function assigns the -1 ("Unknown") key if the club_id is NULL.
+Data Type Conversion:
+
+All keys were cast to INT, and financial values (transfer_fee, market_value_in_eur) were cast to DECIMAL(18, 2) to accurately store monetary values with decimal precision. The original NULL values for fees were preserved to distinguish between a free transfer (0) and a transfer of unknown value (NULL).
+
+
 
 
 
