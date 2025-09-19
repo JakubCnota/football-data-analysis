@@ -486,6 +486,37 @@ Data Type Conversion:
 
 All keys were cast to INT, and financial values (transfer_fee, market_value_in_eur) were cast to DECIMAL(18, 2) to accurately store monetary values with decimal precision. The original NULL values for fees were preserved to distinguish between a free transfer (0) and a transfer of unknown value (NULL).
 
+**The fct_Game_Events** table represents the most granular level of detail in the data model, capturing individual occurrences within each match. The raw data, sourced from staging.game_events, contained a highly valuable but unstructured description column. A significant feature engineering process was undertaken in Power Query to parse this free-text field and convert it into multiple, structured, and analysis-ready columns.
+
+This transformation is a prime example of converting raw, "dirty" data into high-value analytical assets without losing any records.
+
+
+A one-size-fits-all approach to parsing the description column was not feasible, as its structure and meaning varied depending on the EventType (e.g., "Goals", "Cards"). Therefore, a context-aware strategy was implemented, applying different business rules for each event type. The final cleansed table retains all original event records, but the unstructured information is now organized into new, dedicated columns.
+
+1. Parsing "Cards" Events
+The description for card events often contained two distinct pieces of information: the type of card and, optionally, the reason for it (e.g., "10. Yellow Card,Foul"). This was deconstructed into two separate, atomic columns:
+
+CardType: Contains the specific type of card issued (e.g., "Yellow Card", "Red Card"). This was achieved by extracting the text segment before the first comma.
+CardReason: Contains the reason for the card, if provided (e.g., "Foul", "Dissent"). This was extracted from the text segment after the comma. If no reason was given, the field is populated with NULL.
+2. Parsing "Goals" Events
+For "Goals" events, the description column contained various details about how the goal was scored. A "whitelist" approach was used to extract only meaningful, high-value descriptions.
+
+GoalDetail: This new column was created using a custom Power Query function based on a predefined list of valuable keywords ("Header", "Penalty", "Right-footed shot", etc.).
+The function searches the original description for any of the keywords from the approved list.
+If a keyword is found, it is populated into the GoalDetail column.
+If the description contains generic, low-value information (e.g., "8. Tournament goal") or no keyword from the list is found, the field is populated with NULL.
+3. Parsing "Assist" Information
+Similarly, a "whitelist" methodology was applied to extract the type of assist that led to a goal.
+
+AssistType: Based on a curated list of valid assist types ("Free kick", "Cross", "Pass", etc.), this column captures how the goal-scoring opportunity was created.
+The logic mirrors that of GoalDetail: the description is scanned for approved keywords.
+If a match is found (e.g., "Pass"), it is recorded.
+All other descriptions, including generic ones like "Goal of the Season Assist", result in a NULL value, ensuring the column contains only specific, actionable data.
+Final Step: Normalization
+After successfully extracting and structuring all valuable information into the new dedicated columns (CardType, CardReason, GoalDetail, AssistType), the original, redundant description column was removed. This final step ensures the data model is optimized, clean, and free of unstructured data, making it highly efficient for analysis and visualization in Power BI.
+
+This meticulous process transformed a single, challenging column into a rich set of analytical features, dramatically increasing the depth and quality of insights that can be derived from the data.
+
 
 
 
